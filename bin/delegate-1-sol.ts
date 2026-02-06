@@ -1,7 +1,7 @@
 #!/usr/bin/env npx tsx
 
 import { createKeyPairSignerFromBytes } from "@solana/kit";
-import { delegateStake } from "../lib";
+import { delegate } from "@/api/delegation";
 import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
@@ -39,10 +39,10 @@ Wallet address: ${signer.address}
 Delegating ${STAKE_AMOUNT} SOL to Figment validator...`
 );
 
-  const explorerLink = await delegateStake(signer, STAKE_AMOUNT);
+  const explorerUrl = await delegate(signer, STAKE_AMOUNT);
 
   console.log("Delegation successful!");
-  console.log(`Explorer: ${explorerLink}`);
+  console.log(`Explorer: ${explorerUrl}`);
 }
 
 main().catch((error) => {

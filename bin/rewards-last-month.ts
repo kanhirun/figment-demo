@@ -2,9 +2,9 @@
 
 import { Temporal } from "@js-temporal/polyfill";
 import { address } from "@solana/kit";
-import { getRewardsSummary } from "../lib";
-import { USER_MAINNET_STAKE_ACCOUNT } from "../constants";
-import env from "../config";
+import { getRewardsSummary } from "@/api/rewards";
+import { USER_MAINNET_STAKE_ACCOUNT } from "@/constants";
+import env from "@/env";
 
 async function main(): Promise<void> {
   const previousMonth = Temporal.Now.plainDateISO().subtract({ months: 1 }).toString();

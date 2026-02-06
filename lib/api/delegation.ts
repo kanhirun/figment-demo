@@ -1,3 +1,10 @@
+/**
+ * Solana stake delegation module.
+ *
+ * This module provides functionality for staking and unstaking accounts
+ * to the Figment validator on Solana devnet.
+ */
+
 import {
   address,
   appendTransactionMessageInstructions,
@@ -13,7 +20,6 @@ import {
   setTransactionMessageFeePayer,
   setTransactionMessageLifetimeUsingBlockhash,
   signTransactionMessageWithSigners,
-  type Address,
   type TransactionSigner,
 } from "@solana/kit";
 import {
@@ -30,25 +36,28 @@ import {
   STAKE_HISTORY_SYSVAR,
   STAKE_PROGRAM_ADDRESS,
   SYSTEM_PROGRAM_ADDRESS,
-} from "./constants";
+} from "@/constants";
 import {
   type SOL,
-  type DateString,
-  type IReader,
-  type Env,
-} from './core';
+  type TUrl,
+} from '@/core';
 
 /**
- * Delegates SOL to the Figment validator on devnet and returns a block explorer link.
+ * Delegates SOL stake to the Figment validator on Solana devnet.
  *
- * @param payer - The transaction signer (wallet) that will stake SOL
- * @param amountSol - Amount of SOL to stake (as a number)
- * @returns A Solana Explorer link to the delegation transaction
+ * Creates a new stake account, initializes it, and delegates the specified amount
+ * of SOL to the Figment devnet validator. The transaction is signed and confirmed
+ * on-chain.
+ *
+ * @param from - The payer that will fund and authorize the stake account.
+ * @param stakeAmount - The amount of SOL to delegate (in whole SOL units).
+ * @returns A promise that resolves to a Solana Explorer URL for the confirmation tx.
  */
-export const delegateStake = async (
-  payer: TransactionSigner<string>,
-  amountSol: SOL
-): Promise<string> => {
+export const delegate = async (
+  from: TransactionSigner<string>,
+  stakeAmount: SOL
+): Promise<TUrl> => {
+  const payer = from;
   const rpc = createSolanaRpc(devnet(DEVNET_RPC_URL));
   const rpcSubscriptions = createSolanaRpcSubscriptions(devnet(DEVNET_WS_URL));
 
@@ -56,7 +65,7 @@ export const delegateStake = async (
   const rentExemptBalance = await rpc
     .getMinimumBalanceForRentExemption(STAKE_ACCOUNT_SIZE)
     .send();
-  const stakeAmountLamports = lamports(BigInt(amountSol * 1e9));
+  const stakeAmountLamports = lamports(BigInt(stakeAmount * 1e9));
   const totalLamports = rentExemptBalance + stakeAmountLamports;
 
   const createStakeAccountInstruction = getCreateAccountInstruction({
@@ -118,44 +127,4 @@ export const delegateStake = async (
   const sig = getSignatureFromTransaction(signedTx);
 
   return `https://explorer.solana.com/tx/${sig}?cluster=devnet`;
-}
-
-type RewardSummary = any; // api.ts
-
-/**
- * Fetches reward summary for a stake account via Figment Rewards API.
- *
- * @param from - The stake account address to query rewards for
- * @returns `RewardSummary`
- */
-export const getRewardsSummary = (
-  from: Address,
-  args: {
-    start: DateString,
-    end: DateString
-  }
-): IReader<Env, Promise<RewardSummary>> => {
-  const reader = async (env: Env): Promise<RewardSummary> => {
-    const address = from;
-    const { start, end } = args;
-
-    const url = 'https://api.figment.io/solana/rewards';
-    const options = {
-      method: 'POST',
-      headers: {
-        'x-api-key': env.FIGMENT_API_KEY,
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        stake_accounts: [address],
-        start,
-        end,
-      })
-    };
-
-    return fetch(url, options).then(res => res.json());
-  };
-
-  return reader;
 }

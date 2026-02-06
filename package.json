@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "delegate": "tsx bin/delegate.ts",
+    "delegate-1-sol": "tsx bin/delegate-1-sol.ts",
     "rewards-last-month": "tsx bin/rewards-last-month.ts"
   },
   "keywords": [],
