@@ -21,10 +21,10 @@ export const getRewardsSummary = (
     end: TDateString
   }
 ): TReader<TEnv, Promise<TRewardSummary>> => {
-  const reader = async (env: TEnv) => {
-    const address = from;
-    const { start, end } = args;
+  const address = from;
+  const { start, end } = args;
 
+  const reader = async (env: TEnv) => {
     const url = 'https://api.figment.io/solana/rewards';
     const options = {
       method: 'POST',
@@ -39,7 +39,6 @@ export const getRewardsSummary = (
         end,
       })
     };
-
     return fetch(url, options).then(res => res.json());
   };
 

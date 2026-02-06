@@ -91,6 +91,7 @@ export const delegate = async (
 
   const delegateStakeInstruction = getDelegateStakeInstruction({
     stake: stakeAccount.address,
+    // TODO: Inject me via reader
     vote: address(FIGMENT_DEVNET_VALIDATOR_VOTE_ACCOUNT_ADDRESS),
     stakeHistory: STAKE_HISTORY_SYSVAR,
     unused: STAKE_CONFIG_ADDRESS,

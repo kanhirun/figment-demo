@@ -1,15 +1,17 @@
 #!/usr/bin/env npx tsx
 
 import { createKeyPairSignerFromBytes } from "@solana/kit";
-import { delegate } from "@/api/delegation";
+import { type SOL } from '../lib/core';
+import { delegate } from "@/wallet/delegation";
 import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
 
-const STAKE_AMOUNT = 1;
+const STAKE_AMOUNT: SOL = 1;
+const DEFAULT_KEYPAIR_PATH = path.join(os.homedir(), ".config", "solana", "id.json");
 
 async function main(): Promise<void> {
-  const keypairPath = process.argv[2] || path.join(os.homedir(), ".config", "solana", "id.json");
+  const keypairPath = process.argv[2] || DEFAULT_KEYPAIR_PATH;
 
   console.log(`Loading keypair from: ${keypairPath}`);
 
