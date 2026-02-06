@@ -1,5 +1,8 @@
 import { type Address } from "@solana/kit";
 
+export const USER_MAINNET_STAKE_ACCOUNT = 
+  "4uEX6TQgZ3Zn4iXcjMDSnvEgEHpERa2YsguvCUNajx2B";
+
 export const FIGMENT_DEVNET_VALIDATOR_ADDRESS =
   "dv1ZAGvdsz5hHLwWXsVnM94hWf1pjbKVau1QVkaMJ92"
 export const FIGMENT_DEVNET_VALIDATOR_VOTE_ACCOUNT_ADDRESS =

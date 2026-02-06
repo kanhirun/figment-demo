@@ -31,19 +31,24 @@ import {
   STAKE_PROGRAM_ADDRESS,
   SYSTEM_PROGRAM_ADDRESS,
 } from "./constants";
-import { type SOL } from './core';
+import {
+  type SOL,
+  type DateString,
+  type IReader,
+  type Env,
+} from './core';
 
 /**
  * Delegates SOL to the Figment validator on devnet and returns a block explorer link.
  *
- * @param owner - The transaction signer (wallet) that will stake SOL
+ * @param payer - The transaction signer (wallet) that will stake SOL
  * @param amountSol - Amount of SOL to stake (as a number)
  * @returns A Solana Explorer link to the delegation transaction
  */
-export async function delegateStake(
-  owner: TransactionSigner<string>,
+export const delegateStake = async (
+  payer: TransactionSigner<string>,
   amountSol: SOL
-): Promise<string> {
+): Promise<string> => {
   const rpc = createSolanaRpc(devnet(DEVNET_RPC_URL));
   const rpcSubscriptions = createSolanaRpcSubscriptions(devnet(DEVNET_WS_URL));
 
@@ -55,7 +60,7 @@ export async function delegateStake(
   const totalLamports = rentExemptBalance + stakeAmountLamports;
 
   const createStakeAccountInstruction = getCreateAccountInstruction({
-    payer: owner,
+    payer,
     newAccount: stakeAccount,
     lamports: totalLamports,
     space: STAKE_ACCOUNT_SIZE,
@@ -65,8 +70,8 @@ export async function delegateStake(
   const initStakeAccountInstruction = getInitializeInstruction({
     stake: stakeAccount.address,
     arg0: {
-      staker: owner.address,
-      withdrawer: owner.address,
+      staker: payer.address,
+      withdrawer: payer.address,
     },
     arg1: {
       unixTimestamp: 0n,
@@ -80,15 +85,14 @@ export async function delegateStake(
     vote: address(FIGMENT_DEVNET_VALIDATOR_VOTE_ACCOUNT_ADDRESS),
     stakeHistory: STAKE_HISTORY_SYSVAR,
     unused: STAKE_CONFIG_ADDRESS,
-    stakeAuthority: owner,
+    stakeAuthority: payer,
   });
 
-  // Get latest blockhash with lastValidBlockHeight
   const { value: latestBlockhashInfo } = await rpc.getLatestBlockhash().send();
 
   const transactionMessage = pipe(
     createTransactionMessage({ version: 0 }),
-    (tx) => setTransactionMessageFeePayer(owner.address, tx),
+    (tx) => setTransactionMessageFeePayer(payer.address, tx),
     (tx) => setTransactionMessageLifetimeUsingBlockhash(latestBlockhashInfo, tx),
     (tx) =>
       appendTransactionMessageInstructions(
@@ -97,7 +101,7 @@ export async function delegateStake(
       )
   );
 
-  const signedTransaction = await signTransactionMessageWithSigners(
+  const signedTx = await signTransactionMessageWithSigners(
     transactionMessage
   );
 
@@ -106,12 +110,52 @@ export async function delegateStake(
     rpcSubscriptions,
   });
 
-  await sendAndConfirmTransaction(signedTransaction as any, {
+  // TODO: Fix type issue
+  await sendAndConfirmTransaction(signedTx as any, {
     commitment: "confirmed",
   });
 
-  // Get transaction signature
-  const signature = getSignatureFromTransaction(signedTransaction);
+  const sig = getSignatureFromTransaction(signedTx);
 
-  return `https://explorer.solana.com/tx/${signature}?cluster=devnet`;
+  return `https://explorer.solana.com/tx/${sig}?cluster=devnet`;
+}
+
+type RewardSummary = any; // api.ts
+
+/**
+ * Fetches reward summary for a stake account via Figment Rewards API.
+ *
+ * @param from - The stake account address to query rewards for
+ * @returns `RewardSummary`
+ */
+export const getRewardsSummary = (
+  from: Address,
+  args: {
+    start: DateString,
+    end: DateString
+  }
+): IReader<Env, Promise<RewardSummary>> => {
+  const reader = async (env: Env): Promise<RewardSummary> => {
+    const address = from;
+    const { start, end } = args;
+
+    const url = 'https://api.figment.io/solana/rewards';
+    const options = {
+      method: 'POST',
+      headers: {
+        'x-api-key': env.FIGMENT_API_KEY,
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        stake_accounts: [address],
+        start,
+        end,
+      })
+    };
+
+    return fetch(url, options).then(res => res.json());
+  };
+
+  return reader;
 }
