@@ -1,17 +1,29 @@
 #!/usr/bin/env npx tsx
 
 import { createKeyPairSignerFromBytes } from "@solana/kit";
-import { type SOL } from '../lib/core';
-import { delegate } from "@/sdk/delegation";
+import { undelegate } from "@/sdk/delegation";
 import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
 
-const STAKE_AMOUNT: SOL = 1;
 const DEFAULT_KEYPAIR_PATH = path.join(os.homedir(), ".config", "solana", "id.json");
 
 async function main(): Promise<void> {
-  const keypairPath = process.argv[2] || DEFAULT_KEYPAIR_PATH;
+  const stakeAccountAddress = process.argv[2];
+  const keypairPath = process.argv[3] || DEFAULT_KEYPAIR_PATH;
+
+  if (!stakeAccountAddress) {
+    console.error(`
+Error: Stake account address is required
+
+Usage: pnpm undelegate <stake-account-address> [path-to-keypair.json]
+Default keypair path: ~/.config/solana/id.json
+
+Example:
+  pnpm undelegate 7YvPGLaNQQUzT9z8KtrZceH3VVXJzXMvxKYRLSqTi6w6
+`);
+    process.exit(1);
+  }
 
   console.log(`Loading keypair from: ${keypairPath}`);
 
@@ -19,7 +31,7 @@ async function main(): Promise<void> {
     console.error(`
 Error: Keypair file not found at ${keypairPath}
 
-Usage: pnpm delegate [path-to-keypair.json]
+Usage: pnpm undelegate <stake-account-address> [path-to-keypair.json]
 Default path: ~/.config/solana/id.json
 
 To create a new keypair:
@@ -38,13 +50,18 @@ https://faucet.solana.com`
 
   console.log(`
 Wallet address: ${signer.address}
-Delegating ${STAKE_AMOUNT} SOL to Figment validator...`
-);
+Stake account: ${stakeAccountAddress}
+Deactivating stake...`
+  );
 
-  const explorerUrl = await delegate(signer, STAKE_AMOUNT);
+  const explorerUrl = await undelegate(stakeAccountAddress, signer);
 
-  console.log("Delegation successful!");
+  console.log("Deactivation successful!");
   console.log(`Explorer: ${explorerUrl}`);
+  console.log(`
+Note: The stake will become inactive after the current epoch ends.
+After deactivation completes, you can withdraw the funds with a separate transaction.`
+  );
 }
 
 main().catch((error) => {

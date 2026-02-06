@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "delegate-1-sol": "tsx bin/delegate-1-sol.ts",
-    "rewards-last-month": "tsx bin/rewards-last-month.ts"
+    "rewards-last-month": "tsx bin/rewards-last-month.ts",
+    "undelegate": "tsx bin/undelegate.ts"
   },
   "keywords": [],
   "author": "",

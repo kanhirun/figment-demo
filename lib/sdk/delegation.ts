@@ -21,16 +21,20 @@ import {
   setTransactionMessageLifetimeUsingBlockhash,
   signTransactionMessageWithSigners,
   type TransactionSigner,
+  type Address,
 } from "@solana/kit";
+import { getCreateAccountInstruction } from "@solana-program/system";
 import {
+  getDeactivateInstruction,
   getDelegateStakeInstruction,
   getInitializeInstruction,
 } from "@solana-program/stake";
-import { getCreateAccountInstruction } from "@solana-program/system";
 import {
+  // TODO: Explain how I got this from the validator identity address?
   FIGMENT_DEVNET_VALIDATOR_VOTE_ACCOUNT_ADDRESS,
   DEVNET_RPC_URL,
   DEVNET_WS_URL,
+  // TODO: Get values from @solana-program/stake, remove from @/constants
   STAKE_ACCOUNT_SIZE,
   STAKE_CONFIG_ADDRESS,
   STAKE_HISTORY_SYSVAR,
@@ -54,6 +58,7 @@ import {
  * @returns A promise that resolves to a Solana Explorer URL for the confirmation tx.
  */
 export const delegate = async (
+  // Question: we are assuming here that the signer = authority?
   from: TransactionSigner<string>,
   stakeAmount: SOL
 ): Promise<TUrl> => {
@@ -61,7 +66,7 @@ export const delegate = async (
   const rpc = createSolanaRpc(devnet(DEVNET_RPC_URL));
   const rpcSubscriptions = createSolanaRpcSubscriptions(devnet(DEVNET_WS_URL));
 
-  const stakeAccount = await generateKeyPairSigner();
+  const stakeAccount = await generateKeyPairSigner();  // CREATE2 analogy?
   const rentExemptBalance = await rpc
     .getMinimumBalanceForRentExemption(STAKE_ACCOUNT_SIZE)
     .send();
@@ -114,6 +119,59 @@ export const delegate = async (
   const signedTx = await signTransactionMessageWithSigners(
     transactionMessage
   );
+
+  const sendAndConfirmTransaction = sendAndConfirmTransactionFactory({
+    rpc,
+    rpcSubscriptions,
+  });
+
+  // TODO: Fix type issue
+  await sendAndConfirmTransaction(signedTx as any, {
+    commitment: "confirmed",
+  });
+
+  const sig = getSignatureFromTransaction(signedTx);
+
+  // Fix: cluster param depends on ctx
+  return `https://explorer.solana.com/tx/${sig}?cluster=devnet`;
+}
+
+/**
+ * Undelegates a stake account from the Figment validator on Solana devnet.
+ *
+ * This initiates the deactivation process for a previously delegated stake account.
+ * After the current epoch ends, the stake becomes inactive and can be withdrawn.
+ * Note: The actual withdrawal of funds requires a separate withdraw transaction
+ * after the cooldown period completes.
+ *
+ * @param fromStakeAccountAddress - The stake account to deactivate
+ * @param byAuthorized - The stake authority signer authorized to deactivate 
+ * @returns A promise that resolves to a Solana Explorer URL for the deactivation tx.
+ */
+export const undelegate = async (
+  fromStakeAccountAddress: Address,
+  byAuthorized: TransactionSigner<string>,
+): Promise<TUrl> => {
+  const stakeAuthority = byAuthorized;
+  const stakeAccountAddress = address(fromStakeAccountAddress);
+  const rpc = createSolanaRpc(devnet(DEVNET_RPC_URL));
+  const rpcSubscriptions = createSolanaRpcSubscriptions(devnet(DEVNET_WS_URL));
+
+  const deactivateInstruction = getDeactivateInstruction({
+    stake: address(stakeAccountAddress),
+    stakeAuthority,
+  });
+
+  const { value: latestBlockhashInfo } = await rpc.getLatestBlockhash().send();
+
+  const transactionMessage = pipe(
+    createTransactionMessage({ version: 0 }),
+    (tx) => setTransactionMessageFeePayer(stakeAuthority.address, tx),
+    (tx) => setTransactionMessageLifetimeUsingBlockhash(latestBlockhashInfo, tx),
+    (tx) => appendTransactionMessageInstructions([deactivateInstruction], tx)
+  );
+
+  const signedTx = await signTransactionMessageWithSigners(transactionMessage);
 
   const sendAndConfirmTransaction = sendAndConfirmTransactionFactory({
     rpc,
