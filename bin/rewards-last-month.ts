@@ -2,7 +2,7 @@
 
 import { Temporal } from "@js-temporal/polyfill";
 import { address } from "@solana/kit";
-import { getRewardsSummary } from "@/api/rewards";
+import { getRewardsSummary } from "@/sdk/rewards";
 import { USER_MAINNET_STAKE_ACCOUNT } from "@/constants";
 import env from "@/env";
 

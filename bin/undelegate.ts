@@ -1,6 +1,9 @@
 #!/usr/bin/env npx tsx
 
-import { createKeyPairSignerFromBytes } from "@solana/kit";
+import { 
+  type Address,
+  createKeyPairSignerFromBytes
+} from "@solana/kit";
 import { undelegate } from "@/sdk/delegation";
 import * as fs from "fs";
 import * as path from "path";
@@ -9,7 +12,7 @@ import * as os from "os";
 const DEFAULT_KEYPAIR_PATH = path.join(os.homedir(), ".config", "solana", "id.json");
 
 async function main(): Promise<void> {
-  const stakeAccountAddress = process.argv[2];
+  const stakeAccountAddress = process.argv[2] as Address;
   const keypairPath = process.argv[3] || DEFAULT_KEYPAIR_PATH;
 
   if (!stakeAccountAddress) {

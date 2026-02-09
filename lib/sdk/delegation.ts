@@ -63,6 +63,7 @@ export const delegate = async (
   stakeAmount: SOL
 ): Promise<TUrl> => {
   const payer = from;
+
   const rpc = createSolanaRpc(devnet(DEVNET_RPC_URL));
   const rpcSubscriptions = createSolanaRpcSubscriptions(devnet(DEVNET_WS_URL));
 
