@@ -20,5 +20,5 @@ export const FIGMENT_DEVNET_STAKE_CONTEXT: TStakeContext = {
   rpcUrl: DEVNET_RPC_URL,
   wsUrl: DEVNET_WS_URL,
   cluster: 'devnet',
-  validatorVoteAccountAddress: address(FIGMENT_DEVNET_VALIDATOR_VOTE_ACCOUNT_ADDRESS),
+  voteAddress: address(FIGMENT_DEVNET_VALIDATOR_VOTE_ACCOUNT_ADDRESS),
 };

@@ -96,7 +96,7 @@ export const delegateTokens = (
 
     const delegateStakeInstruction = getDelegateStakeInstruction({
       stake: stakeAccount.address,
-      vote: ctx.validatorVoteAccountAddress,
+      vote: ctx.voteAddress,
       stakeHistory: STAKE_HISTORY_SYSVAR,
       unused: STAKE_CONFIG_ADDRESS,
       stakeAuthority: payer,

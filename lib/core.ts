@@ -14,5 +14,5 @@ export type TStakeContext = {
   rpcUrl: TUrl;
   wsUrl: TUrl;
   cluster: 'devnet';
-  validatorVoteAccountAddress: Address;
+  voteAddress: Address;
 };
