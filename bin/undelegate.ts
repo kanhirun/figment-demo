@@ -4,7 +4,7 @@ import {
   type Address,
   createKeyPairSignerFromBytes
 } from "@solana/kit";
-import { undelegate } from "@/sdk/delegation";
+import { undelegateTokens } from "@/sdk/delegation";
 import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
@@ -57,7 +57,7 @@ Stake account: ${stakeAccountAddress}
 Deactivating stake...`
   );
 
-  const explorerUrl = await undelegate(stakeAccountAddress, signer);
+  const explorerUrl = await undelegateTokens(stakeAccountAddress, signer);
 
   console.log("Deactivation successful!");
   console.log(`Explorer: ${explorerUrl}`);

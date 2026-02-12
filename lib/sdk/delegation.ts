@@ -23,23 +23,23 @@ import {
   type TransactionSigner,
   type Address,
 } from "@solana/kit";
-import { getCreateAccountInstruction } from "@solana-program/system";
+import {
+  getCreateAccountInstruction,
+  SYSTEM_PROGRAM_ADDRESS,
+} from "@solana-program/system";
 import {
   getDeactivateInstruction,
   getDelegateStakeInstruction,
   getInitializeInstruction,
+  STAKE_PROGRAM_ADDRESS,
 } from "@solana-program/stake";
 import {
-  // TODO: Explain how I got this from the validator identity address?
   FIGMENT_DEVNET_VALIDATOR_VOTE_ACCOUNT_ADDRESS,
   DEVNET_RPC_URL,
   DEVNET_WS_URL,
-  // TODO: Get values from @solana-program/stake, remove from @/constants
   STAKE_ACCOUNT_SIZE,
   STAKE_CONFIG_ADDRESS,
   STAKE_HISTORY_SYSVAR,
-  STAKE_PROGRAM_ADDRESS,
-  SYSTEM_PROGRAM_ADDRESS,
 } from "@/constants";
 import {
   type SOL,
@@ -57,7 +57,7 @@ import {
  * @param stakeAmount - The amount of SOL to delegate (in whole SOL units).
  * @returns A promise that resolves to a Solana Explorer URL for the confirmation tx.
  */
-export const delegate = async (
+export const delegateTokens = async (
   // Question: we are assuming here that the signer = authority?
   from: TransactionSigner<string>,
   stakeAmount: SOL
@@ -67,7 +67,7 @@ export const delegate = async (
   const rpc = createSolanaRpc(devnet(DEVNET_RPC_URL));
   const rpcSubscriptions = createSolanaRpcSubscriptions(devnet(DEVNET_WS_URL));
 
-  const stakeAccount = await generateKeyPairSigner();  // CREATE2 analogy?
+  const stakeAccount = await generateKeyPairSigner();  // Question: thrown away?
   const rentExemptBalance = await rpc
     .getMinimumBalanceForRentExemption(STAKE_ACCOUNT_SIZE)
     .send();
@@ -149,7 +149,7 @@ export const delegate = async (
  * @param byAuthorized - The stake authority signer authorized to deactivate 
  * @returns A promise that resolves to a Solana Explorer URL for the deactivation tx.
  */
-export const undelegate = async (
+export const undelegateTokens = async (
   fromStakeAccountAddress: Address,
   byAuthorized: TransactionSigner<string>,
 ): Promise<TUrl> => {
