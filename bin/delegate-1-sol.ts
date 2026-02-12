@@ -42,8 +42,8 @@ Wallet address: ${signer.address}
 Delegating ${STAKE_AMOUNT} SOL to Figment validator...`
 );
 
-  const explorerUrl = 
-    delegateTokens(signer, STAKE_AMOUNT)(FIGMENT_DEVNET_STAKE_CONTEXT);
+  const explorerUrl =
+    await delegateTokens(signer, STAKE_AMOUNT)(FIGMENT_DEVNET_STAKE_CONTEXT);
 
   console.log("Delegation successful!");
   console.log(`Explorer: ${explorerUrl}`);
