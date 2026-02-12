@@ -3,6 +3,7 @@
 import { createKeyPairSignerFromBytes } from "@solana/kit";
 import { type SOL } from '../lib/core';
 import { delegateTokens } from "@/sdk/delegation";
+import { FIGMENT_DEVNET_STAKE_CONTEXT } from "@/constants";
 import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
@@ -41,7 +42,8 @@ Wallet address: ${signer.address}
 Delegating ${STAKE_AMOUNT} SOL to Figment validator...`
 );
 
-  const explorerUrl = await delegateTokens(signer, STAKE_AMOUNT);
+  const explorerUrl = 
+    delegateTokens(signer, STAKE_AMOUNT)(FIGMENT_DEVNET_STAKE_CONTEXT);
 
   console.log("Delegation successful!");
   console.log(`Explorer: ${explorerUrl}`);

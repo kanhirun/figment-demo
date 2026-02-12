@@ -1,10 +1,11 @@
 #!/usr/bin/env npx tsx
 
-import { 
+import {
   type Address,
   createKeyPairSignerFromBytes
 } from "@solana/kit";
 import { undelegateTokens } from "@/sdk/delegation";
+import { FIGMENT_DEVNET_STAKE_CONTEXT } from "@/constants";
 import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
@@ -57,7 +58,8 @@ Stake account: ${stakeAccountAddress}
 Deactivating stake...`
   );
 
-  const explorerUrl = await undelegateTokens(stakeAccountAddress, signer);
+  const explorerUrl = 
+    await undelegateTokens(stakeAccountAddress, signer)(FIGMENT_DEVNET_STAKE_CONTEXT);
 
   console.log("Deactivation successful!");
   console.log(`Explorer: ${explorerUrl}`);

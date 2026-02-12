@@ -6,26 +6,26 @@ import {
   type TDateString,
   type TReader,
   type TEnv,
-} from '../core';
+} from '@/core';
 
 /**
  * Fetches reward summary for a stake account via Figment Rewards API.
  *
- * @param from - The stake account address to query rewards for
+ * @param forAddress - The stake account address to query rewards for
  * @returns `IRewardSummary`
  */
 export const getRewardsSummary = (
-  from: Address,
+  forAddress: Address,
   args: {
     start: TDateString,
     end: TDateString
   }
 ): TReader<TEnv, Promise<TRewardSummary>> => {
-  const address = from;
+  const address = forAddress;
   const { start, end } = args;
 
   const reader = async (env: TEnv) => {
-    const url = 'https://api.figment.io/solana/rewards';
+    const url = `https://${env.FIGMENT_API_BASE}/solana/rewards`;
     const options = {
       method: 'POST',
       headers: {
