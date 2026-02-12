@@ -12,6 +12,4 @@ const env = {
   FIGMENT_API_KEY,
 };
 
-export type Env = typeof env;
-
 export default env;
