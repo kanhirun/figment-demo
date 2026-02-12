@@ -23,6 +23,7 @@ $ solana airdrop 5 -u devnet -k ~/.config/solana/id.json
 ```
 
 You can also fund online: `https://faucet.solana.com/`
+Confirm your balance: `solana balance -u devnet`
 
 Running staking operations:
 

@@ -25,7 +25,7 @@ export const getRewardsSummary = (
   const { start, end } = args;
 
   const reader = async (env: TEnv) => {
-    const url = `https://${env.FIGMENT_API_BASE}/solana/rewards`;
+    const url = `https://${env.FIGMENT_API_HOSTNAME}/solana/rewards`;
     const options = {
       method: 'POST',
       headers: {
